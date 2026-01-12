@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CampusTrack | Search Items</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            transition: 0.3s;
+            border: none;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid #6c757d;
+        }
+
+        .img-container {
+            height: 250px;
+            width: 100%;
+            background: #2d3436;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-card.type-lost { border-left-color: #dc3545; }
+        .item-card.type-found { border-left-color: #00875a; }
+
+        .badge-lost { background: #fee2e2; color: #dc3545; font-weight: 700; padding: 4px 12px; border-radius: 50px; }
+        .badge-found { background: #dcfce7; color: #00875a; font-weight: 700; padding: 4px 12px; border-radius: 50px; }
+
+        .action-btns-wrapper {
+            margin-top: auto;
+            padding-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            align-items: center; justify-content: center;
+            cursor: zoom-out;
+        }
+        .lightbox-overlay img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+
+        .match-item { transition: 0.2s; border: 1px solid #e2e8f0; }
+        .match-item:hover { background-color: #f8fafc !important; border-color: #3b82f6; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-dark">Campus Inventory 🔍</h2>
+            <p class="text-muted">Browse all lost and found items in one place.</p>
+        </div>
+        <a href="home.html" class="btn btn-dark rounded-pill px-4 fw-bold">Back Home</a>
+    </div>
+
+    <div class="card border-0 shadow-sm p-4 mb-5" style="border-radius: 20px;">
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label class="small fw-bold text-muted mb-2">KEYWORD SEARCH</label>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or specific location..." oninput="renderItems()">
+            </div>
+            <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-2">ITEM TYPE</label>
+                <select id="typeFilter" class="form-select" onchange="renderItems()">
+                    <option value="ALL">All Items</option>
+                    <option value="LOST">Lost Only</option>
+                    <option value="FOUND">Found Only</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-2">CATEGORY</label>
+                <select id="categoryFilter" class="form-select" onchange="renderItems()">
+                    <option value="ALL">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="documents">Documents</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-2">DATE RECORDED</label>
+                <input type="date" id="dateFilter" class="form-control" onchange="renderItems()">
+            </div>
+        </div>
+        <div class="mt-3 text-end">
+            <button onclick="resetFilters()" class="btn btn-link btn-sm text-decoration-none text-muted">Reset Filters</button>
+        </div>
+    </div>
+
+    <div class="row g-4" id="itemGallery"></div>
+</div>
+
+<div class="modal fade" id="claimModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0" style="border-radius: 24px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold">Claim Item: <span id="modalItemTitle" class="text-primary"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <p class="small text-muted mb-4">Provide details to prove ownership.</p>
+                        <form id="claimForm">
+                            <input type="hidden" id="claimItemId">
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-2">Proof of Ownership</label>
+                                <textarea id="proofDescription" class="form-control" rows="4" placeholder="Describe unique features..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold" style="border-radius: 12px;">Submit Claim</button>
+                        </form>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div id="matchesSection" style="display: none;">
+                            <h6 class="fw-bold mb-3 text-success">
+                                <i class="bi bi-stars me-2"></i>Potential Matches
+                            </h6>
+                            <div id="matchesList" class="d-flex flex-column gap-2"></div>
+                        </div>
+                        <div id="noMatchesMsg" class="text-center py-5 text-muted small">
+                            <i class="bi bi-search mb-2 d-block fs-4"></i>
+                            Analyzing other reports for matches...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Full size preview">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let allItems = [];
+    let currentItemId = null;
+
+    async function fetchItems() {
+        try {
+            const response = await fetch('/api/items');
+            if (response.ok) {
+                allItems = await response.json();
+                renderItems();
+            }
+        } catch (error) { console.error("Error fetching items:", error); }
+    }
+
+    function renderItems() {
+        const filterText = document.getElementById('searchInput').value.toLowerCase();
+        const filterType = document.getElementById('typeFilter').value;
+        const filterCategory = document.getElementById('categoryFilter').value;
+        const filterDate = document.getElementById('dateFilter').value;
+        const gallery = document.getElementById('itemGallery');
+        gallery.innerHTML = "";
+
+        const filtered = allItems.filter(item => {
+            const matchesSearch = item.title.toLowerCase().includes(filterText) ||
+                                 (item.specificLocation && item.specificLocation.toLowerCase().includes(filterText));
+            const matchesType = filterType === "ALL" || item.itemType === filterType;
+            const matchesCategory = filterCategory === "ALL" ||
+                                    (item.category && item.category.toLowerCase() === filterCategory.toLowerCase());
+            const matchesDate = !filterDate || (item.date && item.date.includes(filterDate));
+
+            return matchesSearch && matchesType && matchesCategory && matchesDate && item.status !== "RETURNED";
+        });
+
+        if (filtered.length === 0) {
+            gallery.innerHTML = `<div class="col-12 text-center mt-5"><p class="text-muted">No items found matching these filters.</p></div>`;
+            return;
+        }
+
+        filtered.forEach(item => {
+            const displayImage = item.imageUrl ? item.imageUrl : 'https://placehold.co/400x300?text=No+Image';
+            const card = `
+                <div class="col-md-4 col-lg-3 mb-4 d-flex align-items-stretch">
+                    <div class="card item-card type-${item.itemType.toLowerCase()} w-100">
+                        <div class="img-container">
+                            <img src="${displayImage}" onclick="openLightbox('${displayImage}')" style="cursor: zoom-in;" onerror="this.src='https://placehold.co/400x300?text=Not+Found'">
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge-${item.itemType.toLowerCase()} small">${item.itemType}</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">${item.date || ''}</span>
+                            </div>
+                            <h6 class="fw-bold mb-1 text-dark">${item.title}</h6>
+                            <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1"></i>${item.campusZone || 'Campus'}</p>
+                            <p class="small text-muted" style="font-size: 0.75rem;">${item.specificLocation || ''}</p>
+
+                            <div class="action-btns-wrapper">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-light text-dark border-0 small text-capitalize">${item.category}</span>
+                                    <button onclick="openClaimModal(${item.id}, '${item.title.replace(/'/g, "\\'")}')" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Claim</button>
+                                </div>
+                                <a href="chat.html?itemId=${item.id}&receiver=${item.reporterEmail || ''}"
+                                   class="btn btn-sm btn-outline-dark rounded-pill fw-bold w-100">
+                                   <i class="bi bi-chat-text me-1"></i> Message Reporter
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            gallery.innerHTML += card;
+        });
+    }
+
+    async function openClaimModal(id, title) {
+        currentItemId = id;
+        document.getElementById('modalItemTitle').innerText = title;
+        const matchesSection = document.getElementById('matchesSection');
+        const matchesList = document.getElementById('matchesList');
+        const noMatchesMsg = document.getElementById('noMatchesMsg');
+
+        matchesSection.style.display = 'none';
+        matchesList.innerHTML = '';
+        noMatchesMsg.style.display = 'block';
+        noMatchesMsg.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-2"></div>Analyzing reports...';
+
+        const modal = new bootstrap.Modal(document.getElementById('claimModal'));
+        modal.show();
+
+        try {
+            const response = await fetch(`/api/items/${id}/matches`);
+            if (response.ok) {
+                const matches = await response.json();
+                if (matches.length > 0) {
+                    noMatchesMsg.style.display = 'none';
+                    matchesSection.style.display = 'block';
+                    matches.forEach(match => {
+                        matchesList.innerHTML += `
+                            <div class="match-item p-2 rounded-3 bg-white d-flex align-items-center shadow-sm mb-2">
+                                <img src="${match.imageUrl || 'https://placehold.co/50x50'}" class="rounded-2 me-2" style="width:50px; height:50px; object-fit:cover;">
+                                <div class="flex-grow-1">
+                                    <div class="small fw-bold text-dark">${match.title}</div>
+                                    <div class="text-muted" style="font-size:0.7rem;">Zone: ${match.campusZone}</div>
+                                </div>
+                                <a href="chat.html?itemId=${match.id}&receiver=${match.reporterEmail}" class="btn btn-sm btn-light border rounded-pill"><i class="bi bi-chat-dots"></i></a>
+                            </div>`;
+                    });
+                } else {
+                    noMatchesMsg.innerHTML = '<i class="bi bi-info-circle mb-2 d-block fs-4"></i>No automated matches found yet.';
+                }
+            }
+        } catch (error) {
+            console.error("Match fetch error:", error);
+            noMatchesMsg.innerHTML = "Error loading matches.";
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('typeFilter').value = 'ALL';
+        document.getElementById('categoryFilter').value = 'ALL';
+        document.getElementById('dateFilter').value = '';
+        renderItems();
+    }
+
+    function openLightbox(src) {
+        const lb = document.getElementById('lightbox');
+        document.getElementById('lightboxImg').src = src;
+        lb.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+   document.getElementById('claimForm').onsubmit = async (e) => {
+       e.preventDefault();
+       const proof = document.getElementById('proofDescription').value;
+       const userEmail = localStorage.getItem('userEmail') || 'guest@university.edu';
+
+       const claimData = {
+           itemId: currentItemId,
+           proofOfOwnership: proof,
+           claimerEmail: userEmail
+       };
+
+       try {
+           const response = await fetch('/api/claims', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(claimData)
+           });
+
+           if (response.ok) {
+               alert("✅ Claim submitted successfully!");
+               bootstrap.Modal.getInstance(document.getElementById('claimModal')).hide();
+                document.getElementById('claimForm').reset();
+           } else {
+                alert("Failed to submit claim. Please try again.");
+            }
+       } catch (error) {
+           console.error("Error submitting claim:", error);
+       }
+   };
+
+    fetchItems();
+</script>
+</body>
+</html>

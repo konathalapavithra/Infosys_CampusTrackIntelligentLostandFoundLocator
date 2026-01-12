@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect | Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --sent: #4f46e5;
+            --received: #ffffff;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 95%;
+            max-width: 900px;
+            height: 85vh;
+            background: white;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-header {
+            background: var(--sent);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #messagesArea {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        .msg {
+            max-width: 70%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .msg-sent {
+            align-self: flex-end;
+            background: var(--sent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-received {
+            align-self: flex-start;
+            background: var(--received);
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Milestone 4: Recall/Delete UI Styling */
+        .recalled-msg .msg-content {
+            font-style: italic;
+            opacity: 0.6;
+            color: #64748b !important;
+        }
+
+        .msg-actions {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .msg:hover .msg-actions {
+            opacity: 1;
+        }
+
+        .action-icon {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .action-icon:hover { transform: scale(1.2); }
+
+        .timestamp {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .chat-input-area {
+            padding: 1.5rem 2rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-group {
+            background: #f1f5f9;
+            border-radius: 50px;
+            padding: 5px 15px;
+        }
+
+        #messageInput {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0.8rem;
+        }
+
+        .btn-send {
+            background: var(--sent);
+            color: white;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div>
+            <a href="home.html" class="btn btn-sm btn-outline-light rounded-pill me-2">
+                <i class="bi bi-house-door"></i> Home
+            </a>
+            <span class="fw-bold fs-5" id="chatPartnerName">Campus Chat</span>
+        </div>
+        <div class="text-end">
+            <small class="d-block" id="userNameDisplay"></small>
+            <button onclick="logout()" class="btn btn-link btn-sm text-white p-0 text-decoration-none">Logout</button>
+        </div>
+    </div>
+
+    <div id="messagesArea">
+        <div class="text-center mt-5 text-muted">
+            <div class="spinner-border spinner-border-sm me-2"></div>Loading messages...
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <form id="chatForm">
+            <div class="input-group">
+                <input type="text" id="messageInput" class="form-control" placeholder="Type your message..." autocomplete="off">
+                <button type="submit" class="btn btn-send">
+                    Send <i class="bi bi-send-fill ms-1"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const myEmail = localStorage.getItem('userEmail');
+    const myName = localStorage.getItem('userName') || 'Guest';
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentItemId = urlParams.get('itemId');
+    const receiverEmail = urlParams.get('receiver');
+
+    document.getElementById('userNameDisplay').innerText = `Logged in: ${myEmail}`;
+    if(receiverEmail) document.getElementById('chatPartnerName').innerText = `Chat with ${receiverEmail.split('@')[0]}`;
+
+    const area = document.getElementById('messagesArea');
+
+    // 1. RECALL (Soft Delete)
+    window.recallMsg = async (id) => {
+        if (!confirm("Recall this message? It will be replaced with a notice.")) return;
+        try {
+            const res = await fetch(`/api/chat/recall/${id}?email=${encodeURIComponent(myEmail)}`, { method: 'PUT' });
+            if (res.ok) loadHistory();
+        } catch (err) { console.error("Recall Error:", err); }
+    };
+
+    // 2. DELETE (Hard Delete)
+    window.deleteMsg = async (id) => {
+        if (!confirm("Permanently delete this message? This action is final.")) return;
+        try {
+            const res = await fetch(`/api/chat/delete/${id}?email=${encodeURIComponent(myEmail)}`, { method: 'DELETE' });
+            if (res.ok) loadHistory();
+        } catch (err) { console.error("Delete Error:", err); }
+    };
+
+    // 3. LOAD HISTORY
+    async function loadHistory() {
+        if (!currentItemId) {
+            area.innerHTML = '<div class="alert alert-warning m-3">Error: No Item ID provided. Access chat via an item listing.</div>';
+            return;
+        }
+
+        try {
+            const url = receiverEmail
+                ? `/api/chat/history?user1=${myEmail}&user2=${receiverEmail}`
+                : `/api/chat/item/${currentItemId}`;
+
+            const response = await fetch(url);
+            const messages = await response.json();
+
+            // Store current scroll position to prevent jumping
+            const isAtBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 50;
+
+            area.innerHTML = '';
+            if(messages.length === 0) {
+                area.innerHTML = '<div class="text-center text-muted mt-5">No conversation history yet.</div>';
+            }
+
+            messages.forEach(msg => {
+                const isMe = msg.senderEmail === myEmail;
+                const div = document.createElement('div');
+                div.className = `msg ${isMe ? 'msg-sent' : 'msg-received'} ${msg.recalled ? 'recalled-msg' : ''}`;
+
+                const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+
+                // Actions icons visible only to the sender for non-recalled messages
+                const actions = (isMe && !msg.recalled) ? `
+                    <div class="msg-actions">
+                        <i class="bi bi-arrow-counterclockwise action-icon" title="Recall" onclick="recallMsg(${msg.id})"></i>
+                        <i class="bi bi-trash action-icon text-danger" title="Delete" onclick="deleteMsg(${msg.id})"></i>
+                    </div>` : '';
+
+                div.innerHTML = `
+                    ${actions}
+                    <div class="msg-content">${msg.message}</div>
+                    <span class="timestamp">${time}</span>
+                `;
+                area.appendChild(div);
+            });
+
+            // Only auto-scroll if user was already at bottom or it's first load
+            if (isAtBottom) area.scrollTop = area.scrollHeight;
+
+        } catch (err) { console.error("Load Error:", err); }
+    }
+
+   // In chat.html - Update the form listener
+document.getElementById('chatForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    const payload = {
+        itemId: currentItemId || 0, // Must be a number/long
+        senderEmail: myEmail,       // Must match localStorage
+        message: text,
+        receiverEmail: receiverEmail // If null, the UNION query won't find it later
+    };
+
+    try {
+        const res = await fetch('/api/chat/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            input.value = '';
+            loadHistory(); // Refresh the UI
+        } else {
+            alert("Server rejected the message. Check IntelliJ logs.");
+        }
+    } catch (err) {
+        console.error("Send Error:", err);
+    }
+});
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }
+
+    // Polling every 3 seconds for real-time updates
+    loadHistory();
+    setInterval(loadHistory, 3000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>CampusTrack | Your Campus, Connected</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+	<style>
+		:root {
+           --primary: #0d6efd;
+           --secondary: #00875a;
+           --purple: #6f42c1;
+           --glass: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+           font-family: 'Plus Jakarta Sans', sans-serif;
+           background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+           color: #1e293b;
+           scroll-behavior: smooth;
+           min-height: 100vh;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+           backdrop-filter: blur(15px);
+           background: rgba(255, 255, 255, 0.7);
+           border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+           padding: 1rem 0;
+           transition: all 0.3s ease;
+        }
+        .navbar-brand { font-weight: 800; color: var(--primary); font-size: 1.6rem; }
+
+        /* Hero Styling */
+        .hero { padding: 160px 0 80px; text-align: center; }
+        .hero h1 {
+           font-size: clamp(2.5rem, 5vw, 4rem);
+           font-weight: 800;
+           background: linear-gradient(45deg, #0d6efd, #00875a);
+           -webkit-background-clip: text;
+           -webkit-text-fill-color: transparent;
+           margin-bottom: 1.5rem;
+           letter-spacing: -1px;
+        }
+
+        /* Action Cards */
+        .action-card {
+           background: var(--glass);
+           padding: 2.5rem;
+           border-radius: 28px;
+           border: 1px solid rgba(255, 255, 255, 0.5);
+           text-decoration: none !important;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+           height: 100%;
+           box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        }
+        .action-card:hover {
+           transform: translateY(-12px);
+           box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        }
+        .icon-circle {
+           width: 70px; height: 70px;
+           border-radius: 20px;
+           display: flex; align-items: center; justify-content: center;
+           font-size: 2rem; margin-bottom: 1.5rem;
+           transition: 0.3s;
+        }
+
+        /* Card Variants */
+        .card-report { border-bottom: 5px solid var(--primary); }
+        .card-report .icon-circle { background: rgba(13, 110, 253, 0.1); color: var(--primary); }
+        .card-report:hover .icon-circle { background: var(--primary); color: white; }
+
+        .card-claims { border-bottom: 5px solid var(--purple); }
+        .card-claims .icon-circle { background: rgba(111, 66, 193, 0.1); color: var(--purple); }
+        .card-claims:hover .icon-circle { background: var(--purple); color: white; }
+
+        .card-search { border-bottom: 5px solid var(--secondary); }
+        .card-search .icon-circle { background: rgba(0, 135, 90, 0.1); color: var(--secondary); }
+        .card-search:hover .icon-circle { background: var(--secondary); color: white; }
+
+        .card-chat { border-bottom: 5px solid #ffc107; }
+        .card-chat .icon-circle { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .card-chat:hover .icon-circle { background: #ffc107; color: white; }
+
+        .action-card h5 { font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; }
+        .action-card p { color: #64748b; font-size: 0.95rem; margin-bottom: 0; }
+
+        /* Section Styling */
+        .info-card {
+           background: var(--glass);
+           padding: 3rem;
+           border-radius: 32px;
+           border: 1px solid rgba(255, 255, 255, 0.5);
+           box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        }
+        .section-tag {
+           text-transform: uppercase; font-weight: 800; font-size: 0.75rem;
+           color: var(--primary); letter-spacing: 2px;
+           margin-bottom: 1rem; display: inline-block;
+           background: rgba(13, 110, 253, 0.1); padding: 0.4rem 1rem;
+           border-radius: 50px;
+        }
+        .icon-box-small {
+           width: 45px; height: 45px;
+           background: white; border-radius: 12px;
+           display: flex; align-items: center; justify-content: center;
+           color: var(--primary); font-size: 1.2rem;
+           box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+	</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+	<div class="container">
+		<a class="navbar-brand" href="home.html">CampusTrack 🐾</a>
+		<button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+			<span class="bi bi-list fs-1"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarNav">
+			<ul class="navbar-nav ms-auto align-items-center">
+				<li class="nav-item"><a class="nav-link fw-semibold px-3" href="search-items.html">Search Inventory</a></li>
+
+				<li class="nav-item">
+					<a class="nav-link fw-semibold px-3 text-primary" href="#" data-bs-toggle="modal" data-bs-target="#helpModal">
+						<i class="bi bi-question-circle-fill"></i> Help
+					</a>
+				</li>
+				<li class="nav-item"><a class="nav-link fw-semibold px-3" href="#about">About</a></li>
+				<li class="nav-item"><a class="nav-link fw-semibold px-3" href="#contact">Contact</a></li>
+				<li class="nav-item ms-lg-3">
+					<button onclick="logout()" class="btn btn-outline-danger fw-bold rounded-pill px-4">Logout</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+
+<header class="hero container">
+	<div id="roleBadge" class="d-none"></div>
+	<h1 id="welcomeTitle">Hello, User!</h1> <p id="welcomeSubtext" class="lead text-muted mb-5 mx-auto" style="max-width: 700px;"></p>
+
+	<div class="row g-4 justify-content-center" id="dynamicActions"></div>
+</header>
+
+<section id="about" class="container py-5">
+	<div class="info-card">
+		<div class="row align-items-center g-5">
+			<div class="col-lg-7">
+				<span class="section-tag mb-3">Institutional Integrity</span>
+				<h2 class="fw-bold mb-4 display-6">Smart Campus Recovery System</h2>
+				<p class="text-muted lead mb-4">
+					CampusTrack is a sophisticated management system engineered to streamline the recovery of misplaced assets using intelligent matching algorithms.
+				</p>
+
+				<div class="row g-4">
+					<div class="col-sm-6">
+						<div class="d-flex align-items-start">
+							<div class="icon-box-small me-3 mt-1"><i class="bi bi-robot"></i></div>
+							<div>
+								<h6 class="fw-bold mb-1">Automated Matching</h6>
+								<p class="small text-muted mb-0">Our algorithm cross-references categories, zones, and titles to find items automatically.</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="d-flex align-items-start">
+							<div class="icon-box-small me-3 mt-1"><i class="bi bi-geo-alt-fill"></i></div>
+							<div>
+								<h6 class="fw-bold mb-1">Zone-Based Filtering</h6>
+								<p class="small text-muted mb-0">Narrow down your search by specific campus zones like the Library or Cafeteria.</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="d-flex align-items-start">
+							<div class="icon-box-small me-3 mt-1"><i class="bi bi-clock-history"></i></div>
+							<div>
+								<h6 class="fw-bold mb-1">Real-Time Inventory</h6>
+								<p class="small text-muted mb-0">Instantly view newly reported items with real-time updates to the database.</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="d-flex align-items-start">
+							<div class="icon-box-small me-3 mt-1"><i class="bi bi-shield-lock-fill"></i></div>
+							<div>
+								<h6 class="fw-bold mb-1">Secure Claims</h6>
+								<p class="small text-muted mb-0">Submit proof of ownership through a private portal to ensure data privacy.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-5 text-center">
+				<img src="https://img.freepik.com/free-vector/security-concept-illustration_114360-1481.jpg"
+					 class="img-fluid rounded-5 border shadow-sm" alt="Security illustration">
+			</div>
+		</div>
+	</div>
+</section>
+
+<section id="contact" class="container py-5 mb-5">
+	<div class="text-center mb-5">
+		<span class="section-tag">Get In Touch</span>
+		<h2 class="fw-bold h1">Need Technical Support?</h2>
+	</div>
+	<div class="row g-4 justify-content-center">
+		<div class="col-md-4">
+			<div class="info-card text-center py-4">
+				<div class="icon-circle mx-auto bg-primary text-white" style="width:50px; height:50px; font-size:1.2rem;">
+					<i class="bi bi-envelope-at"></i>
+				</div>
+				<h5>Email Support</h5>
+				<p class="text-muted">support@campustrack.edu</p>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="info-card text-center py-4">
+				<div class="icon-circle mx-auto bg-dark text-white" style="width:50px; height:50px; font-size:1.2rem;">
+					<i class="bi bi-building"></i>
+				</div>
+				<h5>Student Center</h5>
+				<p class="text-muted">Block A, Room 204</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+			<div class="modal-header border-0 pb-0">
+				<h5 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Quick Guide</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="list-group list-group-flush">
+					<div class="list-group-item border-0">
+						<h6 class="fw-bold mb-1">🔍 Found an Item?</h6>
+						<p class="small text-muted">Click <b>Report Item</b> to list it. Be descriptive!</p>
+					</div>
+					<div class="list-group-item border-0">
+						<h6 class="fw-bold mb-1">🧐 Lost Something?</h6>
+						<p class="small text-muted">Use <b>Search Items</b>. If you find yours, click <b>Claim</b>.</p>
+					</div>
+					<div class="list-group-item border-0">
+						<h6 class="fw-bold mb-1">💬 How to Chat?</h6>
+						<p class="small text-muted">Go to <b>My Conversations</b> to view all your active chats.</p>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer border-0">
+				<button type="button" class="btn btn-primary rounded-pill w-100" data-bs-dismiss="modal">Got it!</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<footer class="text-center py-5 text-muted small">
+	&copy; 2026 CampusTrack | All rights reserved✅
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+       // Pull identity data from localStorage
+       const role = localStorage.getItem('role') || 'STUDENT';
+       const userName = localStorage.getItem('userName') || 'Guest'; // Retrieves actual name
+
+       const welcomeTitle = document.getElementById('welcomeTitle');
+       const welcomeSubtext = document.getElementById('welcomeSubtext');
+       const dynamicActions = document.getElementById('dynamicActions');
+       const roleBadge = document.getElementById('roleBadge');
+
+       roleBadge.classList.remove('d-none');
+
+       // 1. Update Administrator Portal Greeting
+       if (role === 'ADMIN') {
+          roleBadge.innerText = "ADMINISTRATOR ACCOUNT";
+          roleBadge.className = "badge bg-dark rounded-pill mb-3 px-3 py-2 text-white";
+
+          // Replaces "Control Center: User" with the real name
+          welcomeTitle.innerText = `Control Center: ${userName}`;
+
+          welcomeSubtext.innerText = "Monitor inventory, verify ownership claims, and view system analytics.";
+          dynamicActions.innerHTML = `
+             <div class="col-md-3">
+                <a href="admin-dashboard.html" class="action-card card-report">
+                   <div class="icon-circle"><i class="bi bi-speedometer2"></i></div>
+                   <h5>Admin Panel</h5>
+                   <p>Manage claims and records.</p>
+                </a>
+             </div>
+             <div class="col-md-3">
+                <a href="admin1.html" class="action-card card-claims">
+                   <div class="icon-circle"><i class="bi bi-bar-chart-line"></i></div>
+                   <h5>Analytics</h5>
+                   <p>View recovery statistics.</p>
+                </a>
+             </div>
+             <div class="col-md-3">
+                <a href="chat-list.html" class="action-card card-chat">
+                   <div class="icon-circle"><i class="bi bi-chat-dots"></i></div>
+                   <h5>Messages</h5>
+                   <p>View user inquiries.</p>
+                </a>
+             </div>
+             <div class="col-md-3">
+                <a href="search-items.html" class="action-card card-search">
+                   <div class="icon-circle"><i class="bi bi-database"></i></div>
+                   <h5>Inventory</h5>
+                   <p>Browse all active items.</p>
+                </a>
+             </div>
+          `;
+       }
+       // 2. Update Student Portal Greeting
+       else {
+          roleBadge.innerText = "STUDENT PORTAL";
+          roleBadge.className = "badge bg-primary rounded-pill mb-3 px-3 py-2 text-white";
+
+          // Replaces "Hello, User!" with the real name
+          welcomeTitle.innerText = `Hello, ${userName}!`;
+
+          welcomeSubtext.innerText = "Report lost belongings or browse the verified campus database.";
+          dynamicActions.innerHTML = `
+             <div class="col-md-3">
+                <a href="report-item.html" class="action-card card-report">
+                   <div class="icon-circle"><i class="bi bi-plus-lg"></i></div>
+                   <h5>Report Item</h5>
+                   <p>List a new item found.</p>
+                </a>
+             </div>
+             <div class="col-md-3">
+                <a href="my-claims.html" class="action-card card-claims">
+                   <div class="icon-circle"><i class="bi bi-file-earmark-check"></i></div>
+                   <h5>My Claims</h5>
+                   <p>Track your claim status.</p>
+                </a>
+             </div>
+             <div class="col-md-3">
+                <a href="chat-list.html" class="action-card card-chat">
+                   <div class="icon-circle"><i class="bi bi-chat-left-text"></i></div>
+                   <h5>Messages</h5>
+                   <p>Chat with founders/owners.</p>
+                </a>
+             </div>
+             <div class="col-md-3">
+                <a href="search-items.html" class="action-card card-search">
+                   <div class="icon-circle"><i class="bi bi-search"></i></div>
+                   <h5>Search Items</h5>
+                   <p>Explore lost and found.</p>
+                </a>
+             </div>
+          `;
+       }
+    });
+
+    function logout() {
+       localStorage.clear();
+       window.location.href = "login.html";
+    }
+</script>
+</body>
+</html>

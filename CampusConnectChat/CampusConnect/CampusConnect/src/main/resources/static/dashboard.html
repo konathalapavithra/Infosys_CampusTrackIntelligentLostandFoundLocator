@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CampusTrack | My Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .stats-card { border: none; border-radius: 15px; transition: 0.3s; }
+        .stats-card:hover { transform: translateY(-5px); }
+        .item-row { background: white; border-radius: 10px; margin-bottom: 10px; transition: 0.2s; }
+        .item-row:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="home.html">CampusTrack</a>
+            <div class="ms-auto text-light">
+                <i class="bi bi-person-circle me-2"></i><span id="userEmailDisplay"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card stats-card bg-primary text-white p-3">
+                    <h6 class="small">Total Reports</h6>
+                    <h2 id="totalReports">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card bg-success text-white p-3">
+                    <h6 class="small">Active Items</h6>
+                    <h2 id="activeItems">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card bg-dark text-white p-3">
+                    <h6 class="small">Resolved Items</h6>
+                    <h2 id="resolvedItems">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
+            <h5 class="fw-bold mb-4">My Reported Items</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="text-muted small">
+                        <tr>
+                            <th>ITEM</th>
+                            <th>TYPE</th>
+                            <th>ZONE</th>
+                            <th>STATUS</th>
+                            <th>DATE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myItemsTable">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userEmail = localStorage.getItem('userEmail');
+        
+        async function loadDashboard() {
+            if (!userEmail) {
+                window.location.href = "login.html";
+                return;
+            }
+            document.getElementById('userEmailDisplay').innerText = userEmail;
+
+            try {
+                const response = await fetch(`/api/items/my-items?email=${userEmail}`);
+                const items = await response.json();
+                renderDashboard(items);
+            } catch (error) {
+                console.error("Dashboard error:", error);
+            }
+        }
+
+        function renderDashboard(items) {
+            const table = document.getElementById('myItemsTable');
+            table.innerHTML = "";
+            
+            // Update Stats
+            document.getElementById('totalReports').innerText = items.length;
+            document.getElementById('activeItems').innerText = items.filter(i => i.status === 'AVAILABLE').length;
+            document.getElementById('resolvedItems').innerText = items.filter(i => i.status === 'RETURNED').length;
+
+            items.forEach(item => {
+                table.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${item.imageUrl || 'https://placehold.co/400x300'}" class="rounded me-3" style="width:40px; height:40px; object-fit:cover;">
+                                <div>
+                                    <div class="fw-bold">${item.title}</div>
+                                    <div class="text-muted small">${item.category}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge ${item.itemType === 'LOST' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}">${item.itemType}</span></td>
+                        <td><span class="small">${item.campusZone}</span></td>
+                        <td><span class="badge bg-light text-dark">${item.status}</span></td>
+                        <td class="small">${item.date}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-dark rounded-pill">Manage</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>
